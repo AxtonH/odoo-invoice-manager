@@ -16,7 +16,22 @@ sys.path.insert(0, parent_dir)
 
 # Set up Flask to serve React build files
 build_folder = os.path.join(parent_dir, 'build')
-app = Flask(__name__, static_folder=build_folder, static_url_path='')
+
+# Create Flask app with error handling for missing build folder
+try:
+    if os.path.exists(build_folder):
+        app = Flask(__name__, static_folder=build_folder, static_url_path='')
+        print(f"✅ Build folder found at: {build_folder}")
+    else:
+        print(f"⚠️  Build folder not found at: {build_folder}, creating Flask app without static folder")
+        app = Flask(__name__)
+        # Create a dummy build folder reference
+        app.static_folder = None
+except Exception as e:
+    print(f"⚠️  Error setting up static folder: {e}")
+    app = Flask(__name__)
+    app.static_folder = None
+
 CORS(app)
 
 # Import the core functionality with better error handling
@@ -860,37 +875,59 @@ def get_email_thread_info(client_key):
 def serve_react_app():
     """Serve the main React application"""
     try:
-        return send_from_directory(app.static_folder, 'index.html')
+        if app.static_folder and os.path.exists(os.path.join(app.static_folder, 'index.html')):
+            return send_from_directory(app.static_folder, 'index.html')
+        else:
+            return """<!DOCTYPE html>
+<html><head><title>Odoo Invoice Manager</title></head>
+<body><h1>Odoo Invoice Manager Backend</h1>
+<p>Flask backend is running! Frontend build not available yet.</p>
+<p><a href="/api/health">Check API Health</a></p></body></html>""", 200
     except Exception as e:
-        return f"Error serving React app: {str(e)}", 500
+        return f"Flask backend is running. Error serving React app: {str(e)}", 200
 
 @app.route('/<path:path>')
 def serve_react_routes(path):
     """Serve React routes and static files"""
     try:
+        # If no static folder, serve simple message
+        if not app.static_folder:
+            return serve_react_app()
+            
         # Check if it's a static file request
         if path and ('.' in path or path.startswith('static/')):
-            if os.path.exists(os.path.join(app.static_folder, path)):
+            static_file_path = os.path.join(app.static_folder, path)
+            if os.path.exists(static_file_path):
                 return send_from_directory(app.static_folder, path)
         
         # For all other routes, serve the React app
-        return send_from_directory(app.static_folder, 'index.html')
+        if os.path.exists(os.path.join(app.static_folder, 'index.html')):
+            return send_from_directory(app.static_folder, 'index.html')
+        else:
+            return serve_react_app()
     except Exception as e:
         print(f"❌ Error serving path {path}: {str(e)}")
-        return send_from_directory(app.static_folder, 'index.html')
+        return serve_react_app()
 
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 8000))
-    print("Starting Odoo Invoice Follow-Up Manager Backend...")
-    print(f"Backend will be available at: http://0.0.0.0:{port}")
-    print("API endpoints:")
+    
+    print("=" * 50)
+    print("🚀 Starting Odoo Invoice Follow-Up Manager Backend...")
+    print(f"📊 Demo Mode: {'ON' if DEMO_MODE else 'OFF'}")
+    print(f"📁 Build Folder: {app.static_folder}")
+    print(f"🌐 Port: {port}")
+    print(f"🔧 Environment: {os.environ.get('NODE_ENV', 'development')}")
+    print("=" * 50)
+    
+    print("API endpoints available:")
+    print("   - GET  /api/health")
     print("   - POST /api/odoo/connect")
     print("   - POST /api/odoo/disconnect")
     print("   - POST /api/odoo/refresh")
     print("   - POST /api/email/send")
     print("   - POST /api/pdf/generate")
-    print("   - GET  /api/health")
     print("   - GET  /api/demo/data")
     print("   - GET  /api/debug/connections")
     print("   - GET  /api/debug/threads")
@@ -902,4 +939,9 @@ if __name__ == '__main__':
     print("   - GET  /api/email/threads/<client_key>")
     print()
     
-    app.run(debug=False, host='0.0.0.0', port=port)
+    try:
+        print(f"🚀 Starting Flask server on http://0.0.0.0:{port}")
+        app.run(debug=False, host='0.0.0.0', port=port)
+    except Exception as e:
+        print(f"❌ Failed to start Flask server: {e}")
+        raise
