@@ -1,0 +1,15 @@
+[build]
+providers = ["node", "python"]
+
+[install]
+cmd = "npm ci && pip install -r requirements.txt"
+
+[build.cmd]
+cmd = "npm run build"
+
+[start]
+cmd = "python backend/run_backend.py"
+
+[variables]
+NODE_ENV = "production"
+NIXPACKS_PYTHON_VERSION = "3.11"
