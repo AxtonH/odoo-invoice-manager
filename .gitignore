@@ -57,3 +57,4 @@ email_threads.json
 
 # Config files with sensitive data
 config/automated_reports_config.json
+node_modules

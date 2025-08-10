@@ -2,7 +2,6 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   Database, 
-  Mail, 
   CheckCircle, 
   AlertCircle,
   FileText,

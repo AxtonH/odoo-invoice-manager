@@ -7,7 +7,6 @@ import Progress from '../components/ui/Progress';
 import { useAuth } from '../contexts/AuthContext';
 import { jsPDF } from 'jspdf';
 import { 
-  Settings, 
   Database, 
   Mail, 
   Shield, 
@@ -65,8 +64,6 @@ const SettingsPage = () => {
   const { 
     isConnected, 
     isLoading, 
-    loadingProgress,
-    loadingMessage,
     error, 
     connectToOdoo, 
     disconnect, 
@@ -124,6 +121,7 @@ const SettingsPage = () => {
     }
   });
   const [showAutomatedReportsForm, setShowAutomatedReportsForm] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [isLoadingAutomatedConfig, setIsLoadingAutomatedConfig] = useState(false);
   const [isSavingAutomatedConfig, setIsSavingAutomatedConfig] = useState(false);
   const [isTestingAutomatedReport, setIsTestingAutomatedReport] = useState(false);

@@ -3,7 +3,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { 
-  TrendingUp, 
   DollarSign, 
   Calendar, 
   Users, 

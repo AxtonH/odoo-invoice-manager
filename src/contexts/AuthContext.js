@@ -180,7 +180,7 @@ export function AuthProvider({ children }) {
     } else {
       localStorage.removeItem('odooConnectionState');
     }
-  }, [state.isConnected, state.connectionDetails, state.overdueInvoices]);
+  }, [state.isConnected, state.connectionDetails, state.overdueInvoices, state]);
 
   // Save settings to localStorage when they change
   useEffect(() => {
@@ -432,6 +432,7 @@ export function useAuth() {
 }
 
 // Demo data generator (simplified version)
+// eslint-disable-next-line no-unused-vars
 function generateDemoData() {
   const clients = [
     "Acme Corporation",

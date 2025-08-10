@@ -8,9 +8,7 @@ import { Badge } from './ui/Badge';
 import { 
   Mail, 
   Users, 
-  FileText, 
   Send, 
-  Eye,
   CheckCircle,
   AlertCircle,
   Clock,
@@ -24,7 +22,6 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react';
-import { format } from 'date-fns';
 
 const EmailSender = () => {
   const { overdueInvoices, isConnected, settings, connectionId, convertCurrency, formatCurrencyAmount } = useAuth();
