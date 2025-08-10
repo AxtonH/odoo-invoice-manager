@@ -19,14 +19,42 @@ build_folder = os.path.join(parent_dir, 'build')
 app = Flask(__name__, static_folder=build_folder, static_url_path='')
 CORS(app)
 
-# Import the core functionality
+# Import the core functionality with better error handling
+DEMO_MODE = False
 try:
     from core import OdooConnector, InvoicePDFGenerator, generate_email_template, send_email, get_automatic_iban_attachment, thread_manager
     from email_templates import get_template_by_type
-    print("Successfully imported core modules")
+    print("✅ Successfully imported core modules")
 except ImportError as e:
-    print(f"Warning: Could not import core modules: {e}")
+    print(f"⚠️  Warning: Could not import core modules: {e}")
     print("   Backend will run in demo mode only")
+    DEMO_MODE = True
+    
+    # Create dummy classes for demo mode
+    class OdooConnector:
+        def __init__(self, *args, **kwargs): pass
+        def connect(self): return False
+        def get_overdue_invoices(self, callback=None): return []
+    
+    class InvoicePDFGenerator:
+        def __init__(self, *args, **kwargs): pass
+        def generate_client_invoices_pdf(self, *args, **kwargs): return None
+    
+    def generate_email_template(*args, **kwargs):
+        return {"subject": "Demo Subject", "body": "Demo Body"}
+    
+    def send_email(*args, **kwargs): return False
+    
+    def get_automatic_iban_attachment(*args, **kwargs): return None
+    
+    def get_template_by_type(*args, **kwargs): return {}
+    
+    class ThreadManager:
+        def __init__(self): self.threads = {}
+        def get_thread_summary(self): return []
+        def clear_threads(self): pass
+    
+    thread_manager = ThreadManager()
 
 # Store active connections
 active_connections = {}
@@ -514,7 +542,10 @@ def health_check():
         'activeConnections': len(active_connections),
         'connectionIds': list(active_connections.keys()),
         'connectionInfo': connection_info,
-        'version': '1.0.0'
+        'version': '1.0.0',
+        'demo_mode': DEMO_MODE,
+        'environment': os.environ.get('NODE_ENV', 'development'),
+        'port': os.environ.get('PORT', '8000')
     })
 
 @app.route('/api/odoo/disconnect', methods=['POST'])
